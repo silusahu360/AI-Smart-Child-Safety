@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="or">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Smart Child Safety System</title>
+<style>
+:root{--navy:#0b2a5b;--navy2:#143d7f;--red:#d71920;--red2:#a30f15;--bg:#f2f6fc;--card:#fff;--ink:#14213d;--mute:#5b6b88;--ok:#1b8a4b;--line:#dbe4f2}
+@media (prefers-color-scheme:dark){:root{--bg:#07142e;--card:#0f2250;--ink:#eef3ff;--mute:#a7b6d6;--line:#22397a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Oriya","Kalinga","Segoe UI",system-ui,sans-serif;line-height:1.5;padding-bottom:78px}
+header{background:linear-gradient(160deg,var(--navy),var(--navy2));color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 16px}
+header h1{margin:0;font-size:1.1rem}header p{margin:2px 0 0;font-size:.8rem;opacity:.8}
+main{max-width:520px;margin:0 auto;padding:14px}
+.tab{display:none}.tab.on{display:block}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.78rem;color:var(--mute);cursor:pointer}
+.chip b{color:var(--ink)}
+.sos-wrap{text-align:center;margin:8px 0 14px;position:relative}
+.ring{position:relative;width:236px;height:236px;margin:0 auto}
+.ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8}
+#prog{stroke:var(--red);stroke-linecap:round;stroke-dasharray:691;stroke-dashoffset:691;transition:stroke-dashoffset 1s linear}
+.ring .bg{stroke:var(--line)}
+#sos{position:absolute;inset:16px;border-radius:50%;border:6px solid #fff;background:radial-gradient(circle at 35% 30%,#ff4a50,var(--red) 55%,var(--red2));color:#fff;font-weight:800;font-size:2.4rem;font-family:inherit;box-shadow:0 12px 26px rgba(215,25,32,.45);cursor:pointer;touch-action:manipulation;transition:transform .1s}
+#sos small{display:block;font-size:.75rem;font-weight:500}
+#sos:active{transform:scale(.95)}
+#sos.go{background:radial-gradient(circle at 35% 30%,#fff,#ffd3d5 40%,#ff9ca1);color:var(--red);animation:pulse .6s infinite}
+@keyframes pulse{50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){#sos.go{animation:none}}
+#status{font-weight:700;font-size:1.05rem;margin:10px 0 2px;min-height:1.6em}
+.hint{color:var(--mute);font-size:.8rem}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:13px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:var(--navy2);margin-top:10px;text-align:center;text-decoration:none}
+.btn.red{background:var(--red)}.btn.grey{background:transparent;color:var(--mute);border:1px solid var(--line)}
+.share-btn{background:linear-gradient(145deg,#138a68,#08734f);box-shadow:0 4px 10px rgba(8,115,79,.22)}
+.share-btn:active{transform:scale(.98)}
+.grid .btn{min-height:76px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;line-height:1.35}
+.grid .btn small{font-size:.78rem;font-weight:600;opacity:.95}
+.btn.hide{display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 6px;font-size:1rem;color:var(--navy2)}
+@media (prefers-color-scheme:dark){.card h2{color:#9cc0ff}}
+label{display:block;font-size:.8rem;color:var(--mute);margin:8px 0 3px}
+input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--bg);color:var(--ink)}
+.photo-row{display:flex;align-items:center;gap:14px;margin:10px 0}
+#childPreview{width:92px;height:92px;object-fit:cover;border-radius:50%;border:3px solid var(--line);background:var(--bg)}
+.small-note{font-size:.75rem;color:var(--mute);margin-top:5px}
+nav{overflow-x:auto}
+nav button{min-width:62px}
+.zone{font-weight:700}.zone.in{color:var(--ok)}.zone.out{color:var(--red)}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{padding:9px 0;border-bottom:1px solid var(--line);font-size:.86rem}
+.hist li:last-child{border:0}.hist span{display:block;color:var(--mute);font-size:.75rem}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;padding:9px 2px;font:inherit;font-size:.72rem;color:var(--mute);cursor:pointer}
+nav button.on{color:var(--red);font-weight:700}
+nav button span{display:block;font-size:1.3rem;line-height:1.2}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .25s;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+body.alert header{background:linear-gradient(160deg,var(--red2),var(--red))}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ffb400;outline-offset:2px}
+</style>
+</head>
+<body>
+<header><h1>🆘 AI Smart Child Safety System</h1><p>ଶିଶୁ ସୁରକ୍ଷା ବ୍ୟବସ୍ଥା · Developed by Students of Chadeimara High School</p></header>
+<main>
+
+<section class="tab on" id="t-home">
+  <div class="chips">
+    <span class="chip">📍 <b id="gpsS">—</b></span>
+    <span class="chip">🔋 <b id="batS">—</b></span>
+    <span class="chip" id="shkChip">📳 Shake <b id="shkS">—</b></span>
+  </div>
+  <div class="sos-wrap">
+    <div class="ring">
+      <svg viewBox="0 0 236 236"><circle class="bg" cx="118" cy="118" r="110"/><circle id="prog" cx="118" cy="118" r="110"/></svg>
+      <button id="sos" aria-label="SOS Emergency">SOS<small>ଜରୁରୀ ସାହାଯ୍ୟ</small></button>
+    </div>
+    <div id="status" aria-live="assertive">Ready · ପ୍ରସ୍ତୁତ</div>
+    <div class="hint">Tap SOS or shake 3 times · ଦବାନ୍ତୁ କିମ୍ବା ୩ ଥର ହଲାନ୍ତୁ</div>
+  </div>
+  <button class="btn grey hide" id="cancel" style="font-size:1.2rem;padding:16px">✖ CANCEL · ବାତିଲ</button>
+  <div class="grid">
+    <button class="btn" id="siren">🚨 Siren<br><small>ସାଇରେନ୍</small></button>
+    <a class="btn" href="tel:112" id="call">📞 Call 112<br><small>୧୧୨ କଲ୍</small></a>
+    <button class="btn" id="callParent" type="button">👨‍👩‍👧 Call Parent<br><small>ଅଭିଭାବକଙ୍କୁ କଲ୍</small></button>
+    <button class="btn share-btn" id="share" type="button">📍 Share Location<br><small>ଲୋକେସନ୍ ପଠାନ୍ତୁ</small></button>
+  </div>
+</section>
+
+<section class="tab" id="t-zone">
+  <div class="card">
+    <h2>🏫 Safe Zone · ସୁରକ୍ଷିତ କ୍ଷେତ୍ର</h2>
+    <div>Status: <span id="zs" class="zone">Not set · ସେଟ୍ ହୋଇନାହିଁ</span></div>
+    <div class="hint" id="zd"></div>
+    <label for="zr">Radius · ପରିସୀମା: <b id="zrv">200</b> m</label>
+    <input id="zr" type="range" min="50" max="1000" step="50" value="200">
+    <button class="btn" id="setZ">Set current place as safe zone<br><small>ବର୍ତ୍ତମାନ ସ୍ଥାନକୁ ସେଟ୍ କରନ୍ତୁ</small></button>
+    <button class="btn grey" id="clrZ">Clear · ହଟାନ୍ତୁ</button>
+  </div>
+</section>
+
+<section class="tab" id="t-profile">
+  <div class="card">
+    <h2>👦 Student Profile · ଛାତ୍ରଛାତ୍ରୀଙ୍କ ବିବରଣୀ</h2>
+    <div class="photo-row">
+      <img id="childPreview" alt="Student photo preview">
+      <div style="flex:1">
+        <label for="childPhoto">Student photo · ଫଟୋ</label>
+        <input id="childPhoto" type="file" accept="image/*">
+        <div class="small-note">Photo stays on this device. ଫଟୋ ଏହି ଫୋନ୍‌ରେ ସେଭ୍ ହେବ।</div>
+      </div>
+    </div>
+    <label for="profileName">Student name · ନାମ</label><input id="profileName" autocomplete="name">
+    <label for="profileClass">Class · ଶ୍ରେଣୀ</label><input id="profileClass" placeholder="ଯଥା: Class 8">
+    <label for="profileParent1">Parent 1 phone · ଅଭିଭାବକ ନମ୍ବର ୧</label><input id="profileParent1" type="tel" inputmode="tel">
+    <label for="profileParent2">Parent 2 phone · ଅଭିଭାବକ ନମ୍ବର ୨ (ଇଚ୍ଛାଧୀନ)</label><input id="profileParent2" type="tel" inputmode="tel">
+    <button class="btn" id="saveProfile">💾 Save Student Profile · ସଞ୍ଚୟ</button>
+  </div>
+</section>
+
+<section class="tab" id="t-school">
+  <div class="card">
+    <h2>🏫 School Details · ବିଦ୍ୟାଳୟ ବିବରଣୀ</h2>
+    <label for="schoolName">School name · ବିଦ୍ୟାଳୟ ନାମ</label><input id="schoolName">
+    <label for="hmName">HM name · ପ୍ରଧାନଶିକ୍ଷକଙ୍କ ନାମ</label><input id="hmName">
+    <label for="hmPhone">HM contact number · ଯୋଗାଯୋଗ ନମ୍ବର</label><input id="hmPhone" type="tel" inputmode="tel">
+    <button class="btn" id="saveSchool">💾 Save School Details · ସଞ୍ଚୟ</button>
+  </div>
+  <p class="small-note">These details are stored locally on this device and remain available offline. ଏହି ତଥ୍ୟ ଏହି ଫୋନ୍‌ରେ ଅଫଲାଇନ୍‌ରେ ମଧ୍ୟ ରହିବ।</p>
+</section>
+
+<section class="tab" id="t-hist">
+  <div class="card"><h2>📋 Emergency History · ଇତିହାସ</h2><ul class="hist" id="hist"></ul>
+  <button class="btn grey" id="clrH">Clear history · ସଫା କରନ୍ତୁ</button></div>
+</section>
+
+<section class="tab" id="t-set">
+  <div class="card">
+    <h2>👨‍👩‍👧 Parent Contacts · ଅଭିଭାବକ</h2>
+    <label for="cn">Child name · ପିଲାର ନାମ</label><input id="cn">
+    <label for="pp">Parent 1 phone · ଫୋନ୍ ୧</label><input id="pp" type="tel" inputmode="tel" placeholder="+91 98XXXXXXXX">
+    <label for="pp2">Parent 2 phone (optional) · ଫୋନ୍ ୨</label><input id="pp2" type="tel" inputmode="tel">
+    <label for="cd">SOS countdown · ସମୟ: <b id="cdv">5</b> s</label>
+    <input id="cd" type="range" min="3" max="10" value="5">
+    <button class="btn" id="saveP">Save · ସଞ୍ଚୟ କରନ୍ତୁ</button>
+  </div>
+  <div class="hint" style="text-align:center">SMS opens your messages app with the alert ready; press Send.<br>SMS ଆପ୍ ଖୋଲିବ, Send ଦବାନ୍ତୁ।</div>
+
+  <div class="card" id="aboutApp">
+    <h2>ℹ️ About · ଆପ୍ ବିଷୟରେ</h2>
+    <p style="margin:8px 0 3px"><b>AI Smart Child Safety System</b></p>
+    <p class="small-note" style="margin:0 0 10px">Developed by Students of Chadeimara High School</p>
+    <div class="small-note">App Version: <b id="appVersion">1.0.0</b></div>
+    <button class="btn grey" id="checkUpdate" type="button">🔄 Update Information · ଅପଡେଟ୍ ସୂଚନା</button>
+    <button class="btn share-btn" id="shareApp" type="button">📤 Share App · ଆପ୍ ସେୟାର୍ କରନ୍ତୁ</button>
+  </div>
+</section>
+</main>
+
+<div id="toast"></div>
+<nav>
+  <button class="on" data-t="home"><span>🏠</span>Home</button>
+  <button data-t="profile"><span>👦</span>Student</button>
+  <button data-t="school"><span>🏫</span>School</button>
+  <button data-t="zone"><span>📍</span>Zone</button>
+  <button data-t="hist"><span>📋</span>History</button>
+  <button data-t="set"><span>⚙️</span>Settings</button>
+</nav>
+
+<script>
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let pos=null,P=store.get('P',{cd:5}),zone=store.get('zone',null),hist=store.get('hist',[]);
+let timer=null,left=0,zoneIn=null,lowSent=false;
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),2600)}
+function vib(p){if(navigator.vibrate)navigator.vibrate(p)}
+
+// tabs
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+b.dataset.t));
+});
+
+// history
+function log(type){hist.unshift({type,t:new Date().toLocaleString(),loc:pos?pos.lat.toFixed(5)+', '+pos.lng.toFixed(5):'—'});hist=hist.slice(0,50);store.set('hist',hist);renderH()}
+function renderH(){$('hist').innerHTML=hist.length?hist.map(h=>`<li>${h.type}<span>${h.t} · ${h.loc}</span></li>`).join(''):'<li>No alerts yet · କୌଣସି ଆଲର୍ଟ ନାହିଁ</li>'}
+
+// contacts
+function loadP(){$('cn').value=P.child||'';$('pp').value=P.p1||'';$('pp2').value=P.p2||'';$('cd').value=P.cd||5;$('cdv').textContent=$('cd').value}
+$('cd').oninput=()=>$('cdv').textContent=$('cd').value;
+$('saveP').onclick=()=>{P={child:$('cn').value.trim(),p1:$('pp').value.trim(),p2:$('pp2').value.trim(),cd:+$('cd').value};store.set('P',P);toast('Saved · ସଞ୍ଚୟ ହେଲା ✓')};
+let student=store.get('student',{name:'',className:'',p1:'',p2:'',photo:''});
+let school=store.get('school',{name:'',hm:'',phone:''});
+const who=()=>student.name||P.child||'Your child';
+function loadStudent(){
+  $('profileName').value=student.name||'';
+  $('profileClass').value=student.className||'';
+  $('profileParent1').value=student.p1||P.p1||'';
+  $('profileParent2').value=student.p2||P.p2||'';
+  if(student.photo)$('childPreview').src=student.photo;
+}
+$('childPhoto').onchange=()=>{
+  const f=$('childPhoto').files&&$('childPhoto').files[0]; if(!f)return;
+  if(!f.type.startsWith('image/')){toast('Choose an image file');return}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      const c=document.createElement('canvas'),max=512,scale=Math.min(1,max/Math.max(im.width,im.height));
+      c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      student.photo=c.toDataURL('image/jpeg',.78);
+      $('childPreview').src=student.photo;
+      toast('Photo ready · ଫଟୋ ପ୍ରସ୍ତୁତ');
+    };
+    im.src=reader.result;
+  };
+  reader.readAsDataURL(f);
+};
+$('saveProfile').onclick=()=>{
+  student={...student,name:$('profileName').value.trim(),className:$('profileClass').value.trim(),p1:$('profileParent1').value.trim(),p2:$('profileParent2').value.trim()};
+  store.set('student',student);
+  P={...P,child:student.name,p1:student.p1,p2:student.p2};store.set('P',P);
+  toast('Student profile saved offline ✓');
+};
+function loadSchool(){
+  $('schoolName').value=school.name||'';
+  $('hmName').value=school.hm||'';
+  $('hmPhone').value=school.phone||'';
+}
+$('saveSchool').onclick=()=>{
+  school={name:$('schoolName').value.trim(),hm:$('hmName').value.trim(),phone:$('hmPhone').value.trim()};
+  store.set('school',school);
+  toast('School details saved offline ✓');
+}
+const maps=()=>pos?`https://maps.google.com/?q=${pos.lat},${pos.lng}`:'(location unavailable)';
+function sms(msg){
+  const nums=[P.p1,P.p2].filter(Boolean);
+  if(!nums.length){toast('Save a parent number first · ନମ୍ବର ସଞ୍ଚୟ କରନ୍ତୁ');document.querySelector('[data-t=set]').click();return false}
+  location.href=`sms:${nums.join(',')}?body=${encodeURIComponent(msg)}`;return true;
+}
+
+// SOS with countdown
+const C=2*Math.PI*110;
+function setProg(f){$('prog').style.strokeDashoffset=C*(1-f)}
+function startSOS(src){
+  if(timer)return;
+  left=P.cd||5;document.body.classList.add('alert');$('sos').classList.add('go');$('cancel').classList.remove('hide');
+  $('prog').style.transition='none';setProg(0);void $('prog').getBoundingClientRect();$('prog').style.transition='stroke-dashoffset 1s linear';
+  const total=left;
+  const tick=()=>{
+    $('status').textContent=`SOS in ${left}… · ${left} ସେକେଣ୍ଡରେ`;setProg((total-left+1)/total);vib(200);beep(880,.12);
+    if(left<=0){clearInterval(timer);timer=null;fire(src);return}
+    left--;
+  };
+  tick();timer=setInterval(tick,1000);
+}
+function stopCountdown(){clearInterval(timer);timer=null;$('sos').classList.remove('go');$('cancel').classList.add('hide');document.body.classList.remove('alert');setProg(0)}
+function fire(src){
+  stopCountdown();log('🚨 SOS ('+src+')');vib([600,200,600]);siren(true);
+  $('status').textContent='SOS SENT · ପଠାଗଲା ✓';
+  if(sms(`🆘 EMERGENCY! ${who()} needs help (${src}). Location: ${maps()}`))setTimeout(()=>{if(confirm('Call 112?\n୧୧୨ କୁ ଫୋନ୍ କରିବେ?'))location.href='tel:112'},1500);
+}
+$('sos').onclick=()=>startSOS('Button');
+$('cancel').onclick=()=>{stopCountdown();$('status').textContent='Cancelled · ବାତିଲ ହେଲା';log('✖ SOS cancelled');toast('Cancelled · ବାତିଲ')};
+
+// audio / siren
+let ac=null,sirenOn=false,osc=null,lfo=null;
+function ctx(){if(!ac){const A=window.AudioContext||window.webkitAudioContext;if(A)ac=new A()}if(ac&&ac.state==='suspended')ac.resume();return ac}
+function beep(f,d){const a=ctx();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+d)}
+function siren(on){
+  const a=ctx();if(!a)return;
+  if(on&&!sirenOn){
+    osc=a.createOscillator();lfo=a.createOscillator();const lg=a.createGain(),g=a.createGain();
+    osc.type='sawtooth';osc.frequency.value=900;lfo.frequency.value=1.2;lg.gain.value=350;g.gain.value=.35;
+    lfo.connect(lg);lg.connect(osc.frequency);osc.connect(g);g.connect(a.destination);osc.start();lfo.start();sirenOn=true;
+  }else if(!on&&sirenOn){osc.stop();lfo.stop();sirenOn=false}
+  $('siren').innerHTML=sirenOn?'🔇 Stop siren<br><small>ବନ୍ଦ କରନ୍ତୁ</small>':'🚨 Siren<br><small>ସାଇରେନ୍</small>';
+  $('siren').classList.toggle('red',sirenOn);
+}
+$('siren').onclick=()=>siren(!sirenOn);
+$('call').onclick=()=>log('📞 Call 112');
+$('callParent').onclick=()=>{
+  const number=(student.p1||student.p2||P.p1||P.p2||'').replace(/[^+0-9]/g,'');
+  if(!number){toast('ପ୍ରଥମେ Student Profile ରେ Parent phone number save କରନ୍ତୁ');return;}
+  log('📞 Calling parent '+number);
+  if(window.Android&&typeof Android.callParent==='function'){Android.callParent(number);}
+  else{location.href='tel:'+number;}
+};
+$('share').onclick=()=>{log('📍 Location shared');sms(`📍 ${who()}'s location: ${maps()}`)};
+
+// GPS + zone
+const dist=(a,b,c,d)=>{const R=6371000,t=x=>x*Math.PI/180,dl=t(c-a),dn=t(d-b),h=Math.sin(dl/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+function checkZone(){
+  if(!zone||!pos)return;const d=dist(pos.lat,pos.lng,zone.lat,zone.lng),inside=d<=zone.r;
+  $('zs').textContent=inside?'Inside · ଭିତରେ ✓':'OUTSIDE · ବାହାରେ ⚠';$('zs').className='zone '+(inside?'in':'out');
+  $('zd').textContent=`Distance from centre: ${Math.round(d)} m · କେନ୍ଦ୍ରରୁ ଦୂରତା`;
+  if(zoneIn===true&&!inside){log('📍 Left safe zone');vib(500);toast('Left safe zone! · କ୍ଷେତ୍ର ବାହାରେ!');sms(`⚠ ${who()} has left the safe zone. Location: ${maps()}`)}
+  zoneIn=inside;
+}
+if(navigator.geolocation)navigator.geolocation.watchPosition(p=>{pos={lat:p.coords.latitude,lng:p.coords.longitude};$('gpsS').textContent='GPS On';checkZone()},()=>$('gpsS').textContent='GPS Off',{enableHighAccuracy:true,maximumAge:5000});
+else $('gpsS').textContent='No GPS';
+$('zr').oninput=()=>$('zrv').textContent=$('zr').value;
+$('setZ').onclick=()=>{if(!pos){toast('Waiting for GPS · GPS ଅପେକ୍ଷା');return}zone={lat:pos.lat,lng:pos.lng,r:+$('zr').value};store.set('zone',zone);zoneIn=true;log('🏫 Safe zone set');checkZone();toast('Safe zone set ✓')};
+$('clrZ').onclick=()=>{zone=null;store.set('zone',null);zoneIn=null;$('zs').textContent='Not set · ସେଟ୍ ହୋଇନାହିଁ';$('zs').className='zone';$('zd').textContent=''};
+if(zone){$('zr').value=zone.r;$('zrv').textContent=zone.r;$('zs').textContent='Waiting for GPS…'}
+
+// shake
+(function(){
+  let n=0,last=0;
+  const on=e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.hypot(a.x||0,a.y||0,a.z||0),now=Date.now();
+    if(m>26&&now-last>350){n=now-last>1500?1:n+1;last=now;if(n>=3){n=0;startSOS('Shake')}}};
+  const start=()=>{addEventListener('devicemotion',on);$('shkS').textContent='On'};
+  if(!('DeviceMotionEvent' in window)){$('shkS').textContent='N/A';return}
+  if(typeof DeviceMotionEvent.requestPermission==='function'){$('shkS').textContent='tap to enable';
+    $('shkChip').onclick=()=>DeviceMotionEvent.requestPermission().then(r=>{if(r==='granted')start()}).catch(()=>{})}
+  else start();
+})();
+
+// battery
+if(navigator.getBattery)navigator.getBattery().then(b=>{
+  const u=()=>{const p=Math.round(b.level*100);$('batS').textContent=p+'%'+(b.charging?' ⚡':'');
+    if(p<=15&&!b.charging&&!lowSent){lowSent=true;log('🔋 Low battery '+p+'%');toast('Low battery · ବ୍ୟାଟେରୀ କମ୍');sms(`🔋 ${who()}'s phone battery is low (${p}%). Location: ${maps()}`)}
+    if(p>20)lowSent=false};
+  u();b.addEventListener('levelchange',u);b.addEventListener('chargingchange',u)});
+else $('batS').textContent='N/A';
+
+$('clrH').onclick=()=>{hist=[];store.set('hist',hist);renderH()};
+
+// About: version information and app sharing
+$('checkUpdate').onclick=()=>{
+  toast('Current version: 1.0.0 · For a newer version, contact the school.');
+};
+$('shareApp').onclick=async()=>{
+  const shareData={
+    title:'AI Smart Child Safety System',
+    text:'AI Smart Child Safety System — Developed by Students of Chadeimara High School.'
+  };
+  try{
+    if(navigator.share){
+      await navigator.share(shareData);
+    }else if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(shareData.title+'\\n'+shareData.text);
+      toast('App details copied · ଆପ୍ ବିବରଣୀ କପି ହେଲା ✓');
+    }else{
+      toast('Sharing is not supported on this device.');
+    }
+  }catch(e){
+    if(e.name!=='AbortError')toast('Unable to share right now.');
+  }
+};
+
+loadP();loadStudent();loadSchool();renderH();
+</script>
+</body>
+</html>
